@@ -60,9 +60,6 @@ export const detectNetwork = (address: string): string | null => {
   if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
     return 'Solana';
   }
-  return null;4}$/.test(address)) {
-    return 'Solana';
-  }
   return null;
 };
 

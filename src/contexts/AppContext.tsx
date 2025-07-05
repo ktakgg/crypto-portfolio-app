@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences } from '../utils/cookieManager';
@@ -34,10 +35,6 @@ const initialState: AppState = {
     loading: false,
   },
 };
-
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { AppState, UserPreferences, Wallet, PortfolioData } from '../types';
-import { getUserId, getWallets, saveWallets, getSettings, saveSettings } from '../utils/cookieManager';
 
 // リデューサー
 const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -180,7 +177,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     initializeApp();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ヘルパー関数
   const setLoading = (loading: boolean) => {

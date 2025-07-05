@@ -5,7 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import Button from '../common/Button';
 import Input from '../common/Input';
 
-const AddWalletForm: React.FC = () => {
+interface AddWalletFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSuccess, onCancel }) => {
   const { dispatch } = useAppContext();
   const [address, setAddress] = useState('');
   const [alias, setAlias] = useState('');
