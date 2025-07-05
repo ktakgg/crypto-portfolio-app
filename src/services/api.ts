@@ -1,4 +1,6 @@
 
+import Moralis from 'moralis';
+
 // API service for fetching token and price data
 export interface TokenBalance {
   token_address: string;
@@ -37,10 +39,26 @@ export interface WalletPortfolioData {
 class APIService {
   private moralisApiKey: string;
   private coinGeckoApiKey: string | null;
+  private moralisInitialized: boolean = false;
 
   constructor() {
     this.moralisApiKey = process.env.REACT_APP_MORALIS_API_KEY || '';
     this.coinGeckoApiKey = process.env.REACT_APP_COINGECKO_API_KEY || null;
+  }
+
+  private async initializeMoralis() {
+    if (!this.moralisInitialized && this.moralisApiKey) {
+      try {
+        await Moralis.start({
+          apiKey: this.moralisApiKey
+        });
+        this.moralisInitialized = true;
+        console.log('Moralis initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize Moralis:', error);
+        throw error;
+      }
+    }
   }
 
   // Moralis API for EVM networks (Ethereum, Polygon, BSC, etc.)
@@ -50,22 +68,28 @@ class APIService {
     }
 
     try {
-      const response = await fetch(
-        `https://deep-index.moralis.io/api/v2.2/${address}/erc20?chain=${chain}&exclude_spam=true`,
-        {
-          headers: {
-            'X-API-Key': this.moralisApiKey,
-            'Accept': 'application/json',
-          },
-        }
-      );
+      await this.initializeMoralis();
 
-      if (!response.ok) {
-        throw new Error(`Moralis API error: ${response.status}`);
-      }
+      // Convert chain name to hex format expected by Moralis
+      const chainMapping: Record<string, string> = {
+        'eth': '0x1',
+        'polygon': '0x89',
+        'bsc': '0x38',
+        'avalanche': '0xa86a',
+        'arbitrum': '0xa4b1',
+        'base': '0x2105',
+        'optimism': '0xa',
+      };
 
-      const data = await response.json();
-      return data.result || [];
+      const chainId = chainMapping[chain] || '0x1';
+
+      const response = await Moralis.EvmApi.token.getWalletTokenBalances({
+        chain: chainId,
+        address: address,
+        excludeSpam: true
+      });
+
+      return response.raw.result || [];
     } catch (error) {
       console.error('Error fetching EVM token balances:', error);
       throw error;
@@ -79,21 +103,27 @@ class APIService {
     }
 
     try {
-      const response = await fetch(
-        `https://deep-index.moralis.io/api/v2.2/${address}/balance?chain=${chain}`,
-        {
-          headers: {
-            'X-API-Key': this.moralisApiKey,
-            'Accept': 'application/json',
-          },
-        }
-      );
+      await this.initializeMoralis();
 
-      if (!response.ok) {
-        throw new Error(`Moralis API error: ${response.status}`);
-      }
+      // Convert chain name to hex format expected by Moralis
+      const chainMapping: Record<string, string> = {
+        'eth': '0x1',
+        'polygon': '0x89',
+        'bsc': '0x38',
+        'avalanche': '0xa86a',
+        'arbitrum': '0xa4b1',
+        'base': '0x2105',
+        'optimism': '0xa',
+      };
 
-      const data = await response.json();
+      const chainId = chainMapping[chain] || '0x1';
+
+      const response = await Moralis.EvmApi.balance.getNativeBalance({
+        chain: chainId,
+        address: address
+      });
+
+      const data = response.raw;
       return {
         balance: data.balance,
         balance_formatted: (parseFloat(data.balance) / Math.pow(10, 18)).toFixed(6),
