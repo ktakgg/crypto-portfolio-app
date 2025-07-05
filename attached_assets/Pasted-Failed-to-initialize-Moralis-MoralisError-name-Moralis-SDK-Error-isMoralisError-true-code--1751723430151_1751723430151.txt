@@ -1,0 +1,46 @@
+Failed to initialize Moralis: 
+MoralisError {name: "Moralis SDK Error", isMoralisError: true, code: "C0009", details: undefined}
+code: "C0009"
+details: undefined
+isMoralisError: true
+name: "Moralis SDK Error"
+cause: undefined
+message: "[C0009] Modules are started already. This method should be called only one time."
+stack: "Moralis SDK Error: [C0009] Modules are started already. This method should be called only one time.↵ at Core.<anonymous> (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14830:23)↵ at step (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13981:17)↵ at Object.next (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13930:14)↵ at https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13904:67↵ at new Promise (<anonymous>)↵ at __awaiter (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13886:10)↵ at Core.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14824:14)↵ at Object.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:254168:17)↵ at APIService.initializeMoralis (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295187:63)↵ at APIService.getEVMTokenBalances (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295205:18)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+
+Error fetching EVM token balances: 
+MoralisError {name: "Moralis SDK Error", isMoralisError: true, code: "C0009", details: undefined}
+code: "C0009"
+details: undefined
+isMoralisError: true
+name: "Moralis SDK Error"
+cause: undefined
+message: "[C0009] Modules are started already. This method should be called only one time."
+stack: "Moralis SDK Error: [C0009] Modules are started already. This method should be called only one time.↵ at Core.<anonymous> (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14830:23)↵ at step (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13981:17)↵ at Object.next (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13930:14)↵ at https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13904:67↵ at new Promise (<anonymous>)↵ at __awaiter (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13886:10)↵ at Core.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14824:14)↵ at Object.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:254168:17)↵ at APIService.initializeMoralis (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295187:63)↵ at APIService.getEVMTokenBalances (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295205:18)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+
+Error fetching wallet portfolio: 
+MoralisError {name: "Moralis SDK Error", isMoralisError: true, code: "C0009", details: undefined}
+code: "C0009"
+details: undefined
+isMoralisError: true
+name: "Moralis SDK Error"
+cause: undefined
+message: "[C0009] Modules are started already. This method should be called only one time."
+stack: "Moralis SDK Error: [C0009] Modules are started already. This method should be called only one time.↵ at Core.<anonymous> (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14830:23)↵ at step (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13981:17)↵ at Object.next (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13930:14)↵ at https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13904:67↵ at new Promise (<anonymous>)↵ at __awaiter (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:13886:10)↵ at Core.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:14824:14)↵ at Object.start (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:254168:17)↵ at APIService.initializeMoralis (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295187:63)↵ at APIService.getEVMTokenBalances (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:295205:18)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+
+Error details: 
+Object {message: "[C0009] Modules are started already. This method should be called only one time.", address: "0xC0a74da4a05bfaB0497C88cdab113637DCb13e63", network: "ethereum", moralisKeyPresent: true}
+address: "0xC0a74da4a05bfaB0497C88cdab113637DCb13e63"
+message: "[C0009] Modules are started already. This method should be called only one time."
+moralisKeyPresent: true
+network: "ethereum"
+[[Prototype]]: Object
