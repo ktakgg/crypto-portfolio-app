@@ -35,6 +35,10 @@ const initialState: AppState = {
   },
 };
 
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { AppState, UserPreferences, Wallet, PortfolioData } from '../types';
+import { getUserId, getWallets, saveWallets, getSettings, saveSettings } from '../utils/cookieManager';
+
 // リデューサー
 const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
@@ -160,10 +164,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       try {
         // ユーザーIDの取得（初期化のため）
         getUserId();
-        
+
         // ウォレットの読み込み
         const wallets = getWallets();
-        
+
         // 設定の読み込み
         const preferences = getPreferences();
 
