@@ -95,7 +95,7 @@ class APIService {
       // Format the response to match TokenBalance type
       return tokens.map(token => ({
         ...token,
-        balance_formatted: parseFloat(token.balance) / Math.pow(10, token.decimals)
+        balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toString()
       }));
     } catch (error) {
       console.error('Error fetching EVM token balances:', error);
@@ -341,7 +341,7 @@ class APIService {
         address: address
       });
 
-      const balanceInLamports = response.raw.lamports;
+      const balanceInLamports = Number(response.raw.lamports);
       const balanceInSOL = balanceInLamports / Math.pow(10, 9); // SOL has 9 decimals
 
       return {
