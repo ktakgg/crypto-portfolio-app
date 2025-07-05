@@ -89,7 +89,7 @@ class APIService {
         excludeSpam: true
       });
 
-      return response.raw.result || [];
+      return response.raw || [];
     } catch (error) {
       console.error('Error fetching EVM token balances:', error);
       throw error;
