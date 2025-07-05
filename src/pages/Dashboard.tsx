@@ -8,7 +8,7 @@ const Dashboard: React.FC = () => {
     if (state.wallets.length > 0) {
       fetchAllPortfolios();
     }
-  }, [state.wallets.length, fetchAllPortfolios]);
+  }, [state.wallets.length]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;

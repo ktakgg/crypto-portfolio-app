@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
@@ -219,7 +218,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     try {
       const portfolioData = await apiService.getWalletPortfolio(wallet.address, wallet.network);
-      
+
       const portfolio: WalletPortfolio = {
         totalValue: portfolioData.totalUsdValue,
         tokens: portfolioData.tokens.map(token => ({
@@ -261,6 +260,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (state.wallets.length > 0) {
+      fetchAllPortfolios();
+    }
+  }, [state.wallets.length]);
 
   const contextValue: AppContextType = {
     state,
