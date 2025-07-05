@@ -82,7 +82,11 @@ export const addWallet = (wallet: any) => {
   if (wallets.some(w => w.address === wallet.address)) {
     throw new Error('This wallet address is already registered.');
   }
-  saveWallets([...wallets, wallet]);
+  const walletToSave = {
+    ...wallet,
+    createdAt: wallet.createdAt || new Date(),
+  };
+  saveWallets([...wallets, walletToSave]);
 };
 
 export const updateWallet = (updatedWallet: any) => {

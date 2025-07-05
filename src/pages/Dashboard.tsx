@@ -1,5 +1,30 @@
 import React, { useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 const Dashboard: React.FC = () => {
   const { state, fetchAllPortfolios } = useAppContext();
@@ -34,6 +59,98 @@ const Dashboard: React.FC = () => {
     return sum + (portfolio ? portfolio.totalValue : 0);
   }, 0);
 
+  // Prepare chart data
+  const getAllTokens = () => {
+    const allTokens: any[] = [];
+    Object.values(state.portfolios).forEach(portfolio => {
+      if (portfolio && !portfolio.loading && !portfolio.error) {
+        // Add native token
+        allTokens.push({
+          symbol: portfolio.nativeToken.symbol,
+          value: portfolio.nativeToken.value,
+          balance: portfolio.nativeToken.balance,
+        });
+        // Add other tokens
+        portfolio.tokens.forEach(token => {
+          const existingToken = allTokens.find(t => t.symbol === token.symbol);
+          if (existingToken) {
+            existingToken.value += token.value;
+            existingToken.balance += token.balance;
+          } else {
+            allTokens.push({
+              symbol: token.symbol,
+              value: token.value,
+              balance: token.balance,
+            });
+          }
+        });
+      }
+    });
+    return allTokens.sort((a, b) => b.value - a.value).slice(0, 10);
+  };
+
+  const topTokens = getAllTokens();
+
+  const tokenBarChartData = {
+    labels: topTokens.map(token => token.symbol),
+    datasets: [
+      {
+        label: 'Token Value (USD)',
+        data: topTokens.map(token => token.value),
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const tokenDistributionData = {
+    labels: topTokens.slice(0, 5).map(token => token.symbol),
+    datasets: [
+      {
+        data: topTokens.slice(0, 5).map(token => token.value),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+        ],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value: any) {
+            return '$' + value.toFixed(2);
+          },
+        },
+      },
+    },
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+      },
+    },
+  };
+
   return (
     <div className="flex flex-col max-w-[960px] flex-1">
       <div className="flex flex-wrap justify-between gap-3 p-4">
@@ -46,6 +163,27 @@ const Dashboard: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Total Portfolio Value</h2>
           <p className="text-3xl font-bold text-gray-900">{formatCurrency(totalPortfolioValue)}</p>
           {state.ui.loading && <p className="text-sm text-gray-600 mt-1">Updating...</p>}
+        </div>
+      )}
+
+      {/* Charts Section */}
+      {state.wallets.length > 0 && topTokens.length > 0 && (
+        <div className="mx-4 mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Token Distribution Doughnut Chart */}
+          <div className="bg-white p-6 rounded-lg border shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Portfolio Distribution</h3>
+            <div className="h-64">
+              <Doughnut data={tokenDistributionData} options={doughnutOptions} />
+            </div>
+          </div>
+
+          {/* Token Value Bar Chart */}
+          <div className="bg-white p-6 rounded-lg border shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Tokens by Value</h3>
+            <div className="h-64">
+              <Bar data={tokenBarChartData} options={chartOptions} />
+            </div>
+          </div>
         </div>
       )}
 

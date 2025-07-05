@@ -134,11 +134,10 @@ class APIService {
     }
   }
 
-  // Get token prices from CoinGecko
-  async getTokenPrices(tokenAddresses: string[], vsPurrency: string = 'usd'): Promise<Record<string, any>> {
+  // Get top 100 coins by market cap
+  async getTopCoins(): Promise<Record<string, any>> {
     try {
-      const addresses = tokenAddresses.join(',');
-      const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${vsPurrency}&include_24hr_change=true`;
+      const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h';
       
       const headers: Record<string, string> = {
         'Accept': 'application/json',
@@ -154,7 +153,73 @@ class APIService {
         throw new Error(`CoinGecko API error: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      
+      // Create mapping of contract addresses to price data
+      const priceMap: Record<string, any> = {};
+      data.forEach((coin: any) => {
+        if (coin.platforms && coin.platforms.ethereum) {
+          priceMap[coin.platforms.ethereum.toLowerCase()] = {
+            usd: coin.current_price,
+            usd_24h_change: coin.price_change_percentage_24h || 0,
+            name: coin.name,
+            symbol: coin.symbol.toUpperCase(),
+            image: coin.image,
+          };
+        }
+      });
+
+      return priceMap;
+    } catch (error) {
+      console.error('Error fetching top coins:', error);
+      return {};
+    }
+  }
+
+  // Get token prices from CoinGecko
+  async getTokenPrices(tokenAddresses: string[], vsPurrency: string = 'usd'): Promise<Record<string, any>> {
+    try {
+      // First try to get prices from top coins list (better data coverage)
+      const topCoins = await this.getTopCoins();
+      const pricesFromTopCoins: Record<string, any> = {};
+      
+      tokenAddresses.forEach(address => {
+        const addressLower = address.toLowerCase();
+        if (topCoins[addressLower]) {
+          pricesFromTopCoins[addressLower] = topCoins[addressLower];
+        }
+      });
+
+      // For tokens not found in top coins, use the contract address endpoint
+      const remainingAddresses = tokenAddresses.filter(addr => 
+        !pricesFromTopCoins[addr.toLowerCase()]
+      );
+
+      let additionalPrices: Record<string, any> = {};
+      if (remainingAddresses.length > 0) {
+        const addresses = remainingAddresses.join(',');
+        const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${vsPurrency}&include_24hr_change=true`;
+        
+        const headers: Record<string, string> = {
+          'Accept': 'application/json',
+        };
+
+        if (this.coinGeckoApiKey) {
+          headers['x-cg-demo-api-key'] = this.coinGeckoApiKey;
+        }
+
+        const response = await fetch(url, { headers });
+
+        if (response.ok) {
+          additionalPrices = await response.json();
+        }
+      }
+
+      // Combine results
+      return {
+        ...pricesFromTopCoins,
+        ...additionalPrices,
+      };
     } catch (error) {
       console.error('Error fetching token prices:', error);
       return {};

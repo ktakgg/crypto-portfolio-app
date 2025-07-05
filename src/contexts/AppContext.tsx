@@ -171,7 +171,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         getUserId();
 
         // ウォレットの読み込み
-        const wallets = getWallets();
+        const wallets = getWallets().map((wallet: any) => ({
+          ...wallet,
+          createdAt: wallet.createdAt ? new Date(wallet.createdAt) : new Date(),
+        }));
 
         // 設定の読み込み
         const preferences = getPreferences();
