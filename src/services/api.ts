@@ -89,7 +89,13 @@ class APIService {
         excludeSpam: true
       });
 
-      return response.raw || [];
+      const tokens = response.raw || [];
+      
+      // Format the response to match TokenBalance type
+      return tokens.map(token => ({
+        ...token,
+        balance_formatted: parseFloat(token.balance) / Math.pow(10, token.decimals)
+      }));
     } catch (error) {
       console.error('Error fetching EVM token balances:', error);
       throw error;

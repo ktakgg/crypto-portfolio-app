@@ -1,6 +1,3 @@
-module.exports = {
-    // PostCSS設定はpostcss.config.jsに移行
-  };
 const webpack = require('webpack');
 
 module.exports = {
@@ -12,13 +9,13 @@ module.exports = {
         "stream": require.resolve("stream-browserify"),
         "crypto": require.resolve("crypto-browserify"),
         "buffer": require.resolve("buffer"),
-        "process": require.resolve("process/browser"),
+        "process": require.resolve("process/browser.js"),
       };
 
       webpackConfig.plugins = [
         ...webpackConfig.plugins,
         new webpack.ProvidePlugin({
-          process: 'process/browser',
+          process: 'process/browser.js',
           Buffer: ['buffer', 'Buffer'],
         }),
       ];

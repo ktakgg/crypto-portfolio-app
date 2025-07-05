@@ -140,3 +140,16 @@ export interface ApiError {
   code?: string;
   details?: any;
 }
+
+export interface TokenBalance {
+  token_address: string;
+  name: string;
+  symbol: string;
+  logo?: string;
+  thumbnail?: string;
+  decimals: number;
+  balance: string;
+  balance_formatted?: number;
+  possible_spam: boolean;
+  verified_contract?: boolean;
+}
