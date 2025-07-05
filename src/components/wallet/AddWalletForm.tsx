@@ -108,7 +108,7 @@ const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSuccess, onCancel }) =>
           <Input
             type="text"
             value={alias}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAlias(e.target.value)}
+            onChange={(value: string) => setAlias(value)}
             placeholder="例: メインウォレット、DeFi用"
             maxLength={50}
             className="w-full"

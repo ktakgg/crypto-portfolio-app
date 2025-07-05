@@ -228,6 +228,9 @@ export const useApp = (): AppContextType => {
   return context;
 };
 
+// useAppContextのエイリアス（後方互換性のため）
+export const useAppContext = useApp;
+
 // 個別のカスタムフック
 export const useWallets = () => {
   const { state } = useApp();
