@@ -222,7 +222,7 @@ class APIService {
       });
 
       // Calculate total USD value
-      const totalUsdValue = nativeBalance.usd_value + 
+      const totalUsdValue = (nativeBalance.usd_value || 0) + 
         tokensWithPrices.reduce((sum, token) => sum + (token.usd_value || 0), 0);
 
       console.log(`Portfolio fetch successful for ${address}:`, {

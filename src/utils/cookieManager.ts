@@ -97,12 +97,3 @@ export const deleteWallet = (address: string) => {
   saveWallets(newWallets);
 };
 
-export const getPreferences = (): any => {
-  const settings = getSettings();
-  return settings.preferences || {};
-};
-
-export const savePreferences = (preferences: any) => {
-  const settings = getSettings();
-  saveSettings({ ...settings, preferences });
-};

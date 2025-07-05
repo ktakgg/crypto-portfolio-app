@@ -52,8 +52,24 @@ export interface PortfolioData {
 
 // ウォレットポートフォリオの型定義
 export interface WalletPortfolio {
-  wallet: Wallet;
-  portfolio: PortfolioData;
+  totalValue: number;
+  tokens: Array<{
+    address: string;
+    symbol: string;
+    name: string;
+    balance: number;
+    value: number;
+    price: number;
+    change24h: number;
+    logoUrl?: string;
+  }>;
+  nativeToken: {
+    symbol: string;
+    balance: number;
+    value: number;
+    price: number;
+    change24h: number;
+  };
   lastUpdated: Date;
   loading: boolean;
   error?: string;
