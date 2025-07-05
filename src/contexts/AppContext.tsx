@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
-import { apiService, WalletPortfolioData } from '../services/api';
+import { apiService } from '../services/api';
 
 // アクションの型定義
 type AppAction =
@@ -210,7 +210,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_WALLETS', payload: wallets });
   };
 
-  const fetchWalletPortfolio = async (walletId: string) => {
+  const fetchWalletPortfolio = useCallback(async (walletId: string) => {
     const wallet = state.wallets.find(w => w.id === walletId);
     if (!wallet) return;
 
@@ -250,22 +250,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         payload: { walletId, error: error instanceof Error ? error.message : 'Unknown error' }
       });
     }
-  };
+  }, [state.wallets]);
 
-  const fetchAllPortfolios = async () => {
+  const fetchAllPortfolios = useCallback(async () => {
     setLoading(true);
     try {
       await Promise.all(state.wallets.map(wallet => fetchWalletPortfolio(wallet.id)));
     } finally {
       setLoading(false);
     }
-  };
+  }, [state.wallets, fetchWalletPortfolio]);
 
   useEffect(() => {
     if (state.wallets.length > 0) {
       fetchAllPortfolios();
     }
-  }, [state.wallets.length]);
+  }, [state.wallets.length, fetchAllPortfolios]);
 
   const contextValue: AppContextType = {
     state,
