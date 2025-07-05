@@ -149,7 +149,10 @@ export interface TokenBalance {
   thumbnail?: string;
   decimals: number;
   balance: string;
-  balance_formatted?: string;
+  balance_formatted: string;
   possible_spam: boolean;
   verified_contract?: boolean;
+  usd_price?: number;
+  usd_value?: number;
+  usd_price_24hr_percent_change?: number;
 }
