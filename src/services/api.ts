@@ -50,10 +50,6 @@ class APIService {
       return;
     }
 
-    if (!this.moralisApiKey) {
-      throw new Error('Moralis API key not configured');
-    }
-
     try {
       await Moralis.start({
         apiKey: this.moralisApiKey
@@ -61,12 +57,6 @@ class APIService {
       APIService.isInitialized = true;
       console.log('Moralis initialized successfully');
     } catch (error) {
-      // If already initialized, ignore the error
-      if (error instanceof Error && error.message.includes('C0009')) {
-        APIService.isInitialized = true;
-        console.log('Moralis already initialized');
-        return;
-      }
       console.error('Failed to initialize Moralis:', error);
       throw error;
     }
@@ -105,8 +95,7 @@ class APIService {
       // Format the response to match TokenBalance type
       return tokens.map(token => ({
         ...token,
-        verified_contract: token.verified_contract || false,
-        balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toFixed(6)
+        balance_formatted: parseFloat(token.balance) / Math.pow(10, token.decimals)
       }));
     } catch (error) {
       console.error('Error fetching EVM token balances:', error);
@@ -352,7 +341,7 @@ class APIService {
         address: address
       });
 
-      const balanceInLamports = Number(response.raw.lamports);
+      const balanceInLamports = response.raw.lamports;
       const balanceInSOL = balanceInLamports / Math.pow(10, 9); // SOL has 9 decimals
 
       return {
@@ -389,7 +378,7 @@ class APIService {
         token_address: token.mint,
         symbol: token.symbol || 'Unknown',
         name: token.name || 'Unknown Token',
-        logo: token.logo || undefined,
+        logo: token.logo,
         decimals: token.decimals,
         balance: token.amount,
         balance_formatted: (parseFloat(token.amount) / Math.pow(10, token.decimals)).toFixed(6),
