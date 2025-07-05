@@ -378,7 +378,7 @@ class APIService {
         token_address: token.mint,
         symbol: token.symbol || 'Unknown',
         name: token.name || 'Unknown Token',
-        logo: token.logo,
+        logo: (token as any).logo || undefined,
         decimals: token.decimals,
         balance: token.amount,
         balance_formatted: (parseFloat(token.amount) / Math.pow(10, token.decimals)).toFixed(6),
