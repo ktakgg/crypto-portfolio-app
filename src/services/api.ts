@@ -155,6 +155,7 @@ class APIService {
         'arbitrum': 'ethereum', // Arbitrum uses ETH as native token
         'base': 'ethereum', // Base uses ETH as native token
         'optimism': 'ethereum', // Optimism uses ETH as native token
+        'solana': 'solana',
       };
 
       const tokenId = nativeTokenMapping[network.toLowerCase()] || 'ethereum';
@@ -326,6 +327,119 @@ class APIService {
     return { labels, data };
   }
 
+  // Get Solana native balance using Moralis SolApi
+  async getSolanaNativeBalance(address: string): Promise<NativeBalance> {
+    if (!this.moralisApiKey) {
+      throw new Error('Moralis API key not configured');
+    }
+
+    try {
+      await this.initializeMoralis();
+
+      const response = await Moralis.SolApi.account.getBalance({
+        network: "mainnet",
+        address: address
+      });
+
+      const balanceInLamports = response.raw.lamports;
+      const balanceInSOL = balanceInLamports / Math.pow(10, 9); // SOL has 9 decimals
+
+      return {
+        balance: balanceInLamports.toString(),
+        balance_formatted: balanceInSOL.toFixed(6),
+        usd_price: 0,
+        usd_value: 0,
+        usd_price_24hr_percent_change: 0,
+      };
+    } catch (error) {
+      console.error('Error fetching Solana native balance:', error);
+      throw error;
+    }
+  }
+
+  // Get Solana token balances using Moralis SolApi
+  async getSolanaTokenBalances(address: string): Promise<TokenBalance[]> {
+    if (!this.moralisApiKey) {
+      throw new Error('Moralis API key not configured');
+    }
+
+    try {
+      await this.initializeMoralis();
+
+      const response = await Moralis.SolApi.account.getSPL({
+        network: "mainnet",
+        address: address
+      });
+
+      const tokens = response.raw || [];
+
+      // Format the response to match TokenBalance type
+      return tokens.map(token => ({
+        token_address: token.mint,
+        symbol: token.symbol || 'Unknown',
+        name: token.name || 'Unknown Token',
+        logo: token.logo,
+        decimals: token.decimals,
+        balance: token.amount,
+        balance_formatted: (parseFloat(token.amount) / Math.pow(10, token.decimals)).toFixed(6),
+        possible_spam: false,
+        verified_contract: true,
+        usd_price: 0,
+        usd_value: 0,
+        usd_price_24hr_percent_change: 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching Solana token balances:', error);
+      throw error;
+    }
+  }
+
+  // Get Solana portfolio data using Moralis SolApi
+  private async getSolanaPortfolio(address: string, network: string): Promise<WalletPortfolioData> {
+    console.log(`Fetching Solana portfolio for ${address}`);
+
+    try {
+      // Get SOL price
+      const solPrice = await this.getNativeTokenPrice('solana');
+
+      // Get native balance and tokens in parallel
+      const [nativeBalance, tokens] = await Promise.all([
+        this.getSolanaNativeBalance(address),
+        this.getSolanaTokenBalances(address),
+      ]);
+
+      // Update native balance with price
+      if (solPrice && solPrice.usd) {
+        nativeBalance.usd_price = solPrice.usd;
+        nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * solPrice.usd;
+        nativeBalance.usd_price_24hr_percent_change = solPrice.usd_24h_change || 0;
+      }
+
+      // Calculate total USD value
+      const totalUsdValue = (nativeBalance.usd_value || 0) + 
+        tokens.reduce((sum, token) => sum + (token.usd_value || 0), 0);
+
+      console.log(`Solana portfolio fetch complete for ${address}:`, {
+        totalUsdValue,
+        nativeBalance: nativeBalance.balance_formatted,
+        tokenCount: tokens.length
+      });
+
+      return {
+        address,
+        network,
+        nativeBalance,
+        tokens,
+        totalUsdValue,
+        lastUpdated: new Date(),
+        loading: false,
+      };
+    } catch (error) {
+      console.error('Error fetching Solana portfolio:', error);
+      throw error;
+    }
+  }
+
   // Get complete wallet portfolio data
   async getWalletPortfolio(address: string, network: string): Promise<WalletPortfolioData> {
     console.log(`Fetching portfolio for ${address} on ${network}`);
@@ -345,69 +459,78 @@ class APIService {
         'arbitrum': 'arbitrum',
         'base': 'base',
         'optimism': 'optimism',
+        'solana': 'solana',
       };
 
       const chain = chainMapping[network.toLowerCase()] || 'eth';
       console.log(`Using chain: ${chain}`);
 
-      // Get native balance and tokens in parallel
-      const [nativeBalance, tokens] = await Promise.all([
-        this.getEVMNativeBalance(address, chain),
-        this.getEVMTokenBalances(address, chain),
-      ]);
+      let portfolioData: WalletPortfolioData;
 
-      // Get prices for tokens
-      const tokenAddresses = tokens.map(token => token.token_address);
-      const prices = tokenAddresses.length > 0 ? await this.getTokenPrices(tokenAddresses) : {};
+      if (chain === 'solana') {
+        portfolioData = await this.getSolanaPortfolio(address, network);
+      } else {
+        // Get native balance and tokens in parallel
+        const [nativeBalance, tokens] = await Promise.all([
+          this.getEVMNativeBalance(address, chain),
+          this.getEVMTokenBalances(address, chain),
+        ]);
 
-      // Get native token price for the specific chain
-      const nativeTokenPrice = await this.getNativeTokenPrice(network);
+        // Get prices for tokens
+        const tokenAddresses = tokens.map(token => token.token_address);
+        const prices = tokenAddresses.length > 0 ? await this.getTokenPrices(tokenAddresses) : {};
 
-      // Update native balance with price
-      if (nativeTokenPrice && nativeTokenPrice.usd) {
-        nativeBalance.usd_price = nativeTokenPrice.usd;
-        nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * nativeTokenPrice.usd;
-        nativeBalance.usd_price_24hr_percent_change = nativeTokenPrice.usd_24h_change || 0;
-      }
+        // Get native token price for the specific chain
+        const nativeTokenPrice = await this.getNativeTokenPrice(network);
 
-      // Update tokens with prices
-      const tokensWithPrices = tokens.map(token => {
-        const priceData = prices[token.token_address.toLowerCase()];
-        if (priceData) {
-          const balanceFormatted = parseFloat(token.balance) / Math.pow(10, token.decimals);
+        // Update native balance with price
+        if (nativeTokenPrice && nativeTokenPrice.usd) {
+          nativeBalance.usd_price = nativeTokenPrice.usd;
+          nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * nativeTokenPrice.usd;
+          nativeBalance.usd_price_24hr_percent_change = nativeTokenPrice.usd_24h_change || 0;
+        }
+
+        // Update tokens with prices
+        const tokensWithPrices = tokens.map(token => {
+          const priceData = prices[token.token_address.toLowerCase()];
+          if (priceData) {
+            const balanceFormatted = parseFloat(token.balance) / Math.pow(10, token.decimals);
+            return {
+              ...token,
+              balance_formatted: balanceFormatted.toFixed(6),
+              usd_price: priceData.usd,
+              usd_value: balanceFormatted * priceData.usd,
+              usd_price_24hr_percent_change: priceData.usd_24h_change,
+            };
+          }
           return {
             ...token,
-            balance_formatted: balanceFormatted.toFixed(6),
-            usd_price: priceData.usd,
-            usd_value: balanceFormatted * priceData.usd,
-            usd_price_24hr_percent_change: priceData.usd_24h_change,
+            balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toFixed(6),
           };
-        }
-        return {
-          ...token,
-          balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toFixed(6),
+        });
+
+        // Calculate total USD value
+        const totalUsdValue = (nativeBalance.usd_value || 0) + 
+          tokensWithPrices.reduce((sum, token) => sum + (token.usd_value || 0), 0);
+
+        console.log(`Portfolio fetch successful for ${address}:`, {
+          totalUsdValue,
+          nativeBalance: nativeBalance.balance_formatted,
+          tokenCount: tokensWithPrices.length
+        });
+
+        portfolioData = {
+          address,
+          network,
+          nativeBalance,
+          tokens: tokensWithPrices,
+          totalUsdValue,
+          lastUpdated: new Date(),
+          loading: false,
         };
-      });
+      }
 
-      // Calculate total USD value
-      const totalUsdValue = (nativeBalance.usd_value || 0) + 
-        tokensWithPrices.reduce((sum, token) => sum + (token.usd_value || 0), 0);
-
-      console.log(`Portfolio fetch successful for ${address}:`, {
-        totalUsdValue,
-        nativeBalance: nativeBalance.balance_formatted,
-        tokenCount: tokensWithPrices.length
-      });
-
-      return {
-        address,
-        network,
-        nativeBalance,
-        tokens: tokensWithPrices,
-        totalUsdValue,
-        lastUpdated: new Date(),
-        loading: false,
-      };
+      return portfolioData;
     } catch (error) {
       console.error('Error fetching wallet portfolio:', error);
       console.error('Error details:', {
