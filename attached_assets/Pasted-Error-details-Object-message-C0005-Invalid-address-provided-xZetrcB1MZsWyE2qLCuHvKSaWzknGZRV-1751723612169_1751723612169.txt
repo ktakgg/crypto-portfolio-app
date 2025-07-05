@@ -1,0 +1,35 @@
+Error details: 
+Object {message: "[C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2", address: "xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2", network: "solana", moralisKeyPresent: true}
+address: "xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2"
+message: "[C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2"
+moralisKeyPresent: true
+network: "solana"
+[[Prototype]]: Object
+
+Error fetching portfolio: 
+MoralisError {name: "Moralis SDK Core Error", isMoralisError: true, code: "C0005", details: undefined}
+code: "C0005"
+details: undefined
+isMoralisError: true
+name: "Moralis SDK Core Error"
+cause: undefined
+message: "[C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2"
+stack: "Moralis SDK Core Error: [C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2↵ at EvmAddress.parse (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15882:13)↵ at new EvmAddress (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15848:30)↵ at EvmAddress.create (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15875:12)↵ at Object.getRequestUrlParams$H [as getRequestUrlParams] (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:26216:25)↵ at OperationRequestBuilder.prepareUrl (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5503:36)↵ at OperationResolver.<anonymous> (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5580:40)↵ at step (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5481:17)↵ at Object.next (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5430:14)↵ at https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5404:67↵ at new Promise (<anonymous>)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+
+Error fetching portfolio: 
+MoralisError {name: "Moralis SDK Core Error", isMoralisError: true, code: "C0005", details: undefined}
+code: "C0005"
+details: undefined
+isMoralisError: true
+name: "Moralis SDK Core Error"
+cause: undefined
+message: "[C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2"
+stack: "Moralis SDK Core Error: [C0005] Invalid address provided: xZetrcB1MZsWyE2qLCuHvKSaWzknGZRVouxsJgBDPg2↵ at EvmAddress.parse (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15882:13)↵ at new EvmAddress (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15848:30)↵ at EvmAddress.create (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:15875:12)↵ at Object.getRequestUrlParams$H [as getRequestUrlParams] (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:26216:25)↵ at OperationRequestBuilder.prepareUrl (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5503:36)↵ at OperationResolver.<anonymous> (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5580:40)↵ at step (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5481:17)↵ at Object.next (https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5430:14)↵ at https://2ed44d04-5174-4732-be68-70c77a58e6fe-00-xtb7g9tf4zzk.sisko.replit.dev/static/js/bundle.js:5404:67↵ at new Promise (<anonymous>)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
+constructor: ƒ MoralisError(_a)
+[[Prototype]]: Object
