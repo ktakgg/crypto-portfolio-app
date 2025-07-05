@@ -72,20 +72,24 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       };
 
     case 'UPDATE_WALLET':
+      const updatedWalletList = state.wallets.map(wallet =>
+        wallet.id === action.payload.id
+          ? { ...wallet, ...action.payload.updates }
+          : wallet
+      );
+      saveWallets(updatedWalletList);
       return {
         ...state,
-        wallets: state.wallets.map(wallet =>
-          wallet.id === action.payload.id
-            ? { ...wallet, ...action.payload.updates }
-            : wallet
-        ),
+        wallets: updatedWalletList,
       };
 
     case 'DELETE_WALLET':
       const { [action.payload]: deletedPortfolio, ...remainingPortfolios } = state.portfolios;
+      const filteredWallets = state.wallets.filter(wallet => wallet.id !== action.payload);
+      saveWallets(filteredWallets);
       return {
         ...state,
-        wallets: state.wallets.filter(wallet => wallet.id !== action.payload),
+        wallets: filteredWallets,
         portfolios: remainingPortfolios,
       };
 

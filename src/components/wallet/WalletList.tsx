@@ -77,7 +77,7 @@ const WalletList: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <Input
                           value={editAlias}
-                          onChange={(e:any) => setEditAlias(e.target.value)}
+                          onChange={(value: string) => setEditAlias(value)}
                           className="flex-1"
                           maxLength={50}
                         />
