@@ -14,7 +14,7 @@ const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSuccess, onCancel }) =>
   const { dispatch } = useAppContext();
   const [address, setAddress] = useState('');
   const [alias, setAlias] = useState('');
-  const [network, setNetwork] = useState<'ethereum' | 'solana' | ''>('');
+  const [network, setNetwork] = useState<'ethereum' | 'polygon' | 'arbitrum' | 'base' | 'optimism' | 'bsc' | 'avalanche' | 'solana' | ''>('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

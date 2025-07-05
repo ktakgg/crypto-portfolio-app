@@ -43,7 +43,17 @@ const Dashboard: React.FC = () => {
   };
 
   const getChainName = (network: string) => {
-    return network === 'ethereum' ? 'Ethereum' : 'Solana';
+    const chainNames: Record<string, string> = {
+      'ethereum': 'Ethereum',
+      'polygon': 'Polygon',
+      'arbitrum': 'Arbitrum',
+      'base': 'Base',
+      'optimism': 'Optimism',
+      'bsc': 'BSC',
+      'avalanche': 'Avalanche',
+      'solana': 'Solana',
+    };
+    return chainNames[network.toLowerCase()] || network;
   };
 
   const formatCurrency = (value: number) => {

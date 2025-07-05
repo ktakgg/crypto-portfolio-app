@@ -3,7 +3,7 @@ export interface Wallet {
   id: string;
   address: string;
   alias: string;
-  network: 'ethereum' | 'solana';
+  network: 'ethereum' | 'polygon' | 'arbitrum' | 'base' | 'optimism' | 'bsc' | 'avalanche' | 'solana';
   createdAt: Date;
 }
 

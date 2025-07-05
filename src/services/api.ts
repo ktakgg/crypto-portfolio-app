@@ -107,10 +107,21 @@ class APIService {
     }
   }
 
-  // Get ETH price from CoinGecko
-  async getETHPrice(): Promise<any> {
+  // Get native token price for specific network
+  async getNativeTokenPrice(network: string): Promise<any> {
     try {
-      const url = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true';
+      const nativeTokenMapping: Record<string, string> = {
+        'ethereum': 'ethereum',
+        'polygon': 'matic-network',
+        'bsc': 'binancecoin',
+        'avalanche': 'avalanche-2',
+        'arbitrum': 'ethereum', // Arbitrum uses ETH as native token
+        'base': 'ethereum', // Base uses ETH as native token
+        'optimism': 'ethereum', // Optimism uses ETH as native token
+      };
+
+      const tokenId = nativeTokenMapping[network.toLowerCase()] || 'ethereum';
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd&include_24hr_change=true`;
       
       const headers: Record<string, string> = {
         'Accept': 'application/json',
@@ -127,11 +138,16 @@ class APIService {
       }
 
       const data = await response.json();
-      return data.ethereum;
+      return data[tokenId];
     } catch (error) {
-      console.error('Error fetching ETH price:', error);
+      console.error('Error fetching native token price:', error);
       return { usd: 0, usd_24h_change: 0 };
     }
+  }
+
+  // Get ETH price from CoinGecko (kept for backwards compatibility)
+  async getETHPrice(): Promise<any> {
+    return this.getNativeTokenPrice('ethereum');
   }
 
   // Get top 100 coins by market cap
@@ -289,6 +305,9 @@ class APIService {
         'polygon': 'polygon',
         'bsc': 'bsc',
         'avalanche': 'avalanche',
+        'arbitrum': 'arbitrum',
+        'base': 'base',
+        'optimism': 'optimism',
       };
 
       const chain = chainMapping[network.toLowerCase()] || 'eth';
@@ -304,14 +323,14 @@ class APIService {
       const tokenAddresses = tokens.map(token => token.token_address);
       const prices = tokenAddresses.length > 0 ? await this.getTokenPrices(tokenAddresses) : {};
 
-      // Get ETH price for native balance
-      const ethPrice = await this.getETHPrice();
+      // Get native token price for the specific chain
+      const nativeTokenPrice = await this.getNativeTokenPrice(network);
 
       // Update native balance with price
-      if (ethPrice && ethPrice.usd) {
-        nativeBalance.usd_price = ethPrice.usd;
-        nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * ethPrice.usd;
-        nativeBalance.usd_price_24hr_percent_change = ethPrice.usd_24h_change || 0;
+      if (nativeTokenPrice && nativeTokenPrice.usd) {
+        nativeBalance.usd_price = nativeTokenPrice.usd;
+        nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * nativeTokenPrice.usd;
+        nativeBalance.usd_price_24hr_percent_change = nativeTokenPrice.usd_24h_change || 0;
       }
 
       // Update tokens with prices

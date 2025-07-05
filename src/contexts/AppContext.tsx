@@ -3,6 +3,21 @@ import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
 import { apiService } from '../services/api';
 
+// Helper function to get native token symbol for each network
+const getNativeTokenSymbol = (network: string): string => {
+  const nativeTokens: Record<string, string> = {
+    'ethereum': 'ETH',
+    'polygon': 'MATIC',
+    'arbitrum': 'ETH',
+    'base': 'ETH',
+    'optimism': 'ETH',
+    'bsc': 'BNB',
+    'avalanche': 'AVAX',
+    'solana': 'SOL',
+  };
+  return nativeTokens[network.toLowerCase()] || 'ETH';
+};
+
 // アクションの型定義
 type AppAction =
   | { type: 'SET_LOADING'; payload: boolean }
@@ -235,7 +250,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           logoUrl: token.logo,
         })),
         nativeToken: {
-          symbol: wallet.network === 'ethereum' ? 'ETH' : 'SOL',
+          symbol: getNativeTokenSymbol(wallet.network),
           balance: parseFloat(portfolioData.nativeBalance.balance_formatted),
           value: portfolioData.nativeBalance.usd_value || 0,
           price: portfolioData.nativeBalance.usd_price || 0,
