@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
-import { getUserId, getWallets, getPreferences, savePreferences } from '../utils/cookieManager';
+import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
 
 // アクションの型定義
 type AppAction =
@@ -64,9 +64,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       };
 
     case 'ADD_WALLET':
+      const updatedWallets = [...state.wallets, action.payload];
+      saveWallets(updatedWallets);
       return {
         ...state,
-        wallets: [...state.wallets, action.payload],
+        wallets: updatedWallets,
       };
 
     case 'UPDATE_WALLET':

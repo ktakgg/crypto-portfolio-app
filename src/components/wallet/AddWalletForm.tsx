@@ -71,6 +71,9 @@ const AddWalletForm: React.FC<AddWalletFormProps> = ({ onSuccess, onCancel }) =>
       setAlias('');
       setNetwork('');
 
+      // Close dialog
+      onSuccess();
+
     } catch (err) {
       setError('ウォレットの追加に失敗しました');
     } finally {
