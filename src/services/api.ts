@@ -105,6 +105,7 @@ class APIService {
       // Format the response to match TokenBalance type
       return tokens.map(token => ({
         ...token,
+        verified_contract: token.verified_contract || false,
         balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toFixed(6)
       }));
     } catch (error) {
@@ -351,7 +352,7 @@ class APIService {
         address: address
       });
 
-      const balanceInLamports = response.raw.lamports;
+      const balanceInLamports = Number(response.raw.lamports);
       const balanceInSOL = balanceInLamports / Math.pow(10, 9); // SOL has 9 decimals
 
       return {
@@ -388,7 +389,7 @@ class APIService {
         token_address: token.mint,
         symbol: token.symbol || 'Unknown',
         name: token.name || 'Unknown Token',
-        logo: token.logo || undefined, // Allow undefined logo
+        logo: undefined
         decimals: token.decimals,
         balance: token.amount,
         balance_formatted: (parseFloat(token.amount) / Math.pow(10, token.decimals)).toFixed(6),
