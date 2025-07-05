@@ -1,4 +1,3 @@
-
 import Moralis from 'moralis';
 
 // API service for fetching token and price data
@@ -39,7 +38,7 @@ export interface WalletPortfolioData {
 class APIService {
   private moralisApiKey: string;
   private coinGeckoApiKey: string | null;
-  private moralisInitialized: boolean = false;
+  private static isInitialized = false;
 
   constructor() {
     this.moralisApiKey = process.env.REACT_APP_MORALIS_API_KEY || '';
@@ -47,17 +46,19 @@ class APIService {
   }
 
   private async initializeMoralis() {
-    if (!this.moralisInitialized && this.moralisApiKey) {
-      try {
-        await Moralis.start({
-          apiKey: this.moralisApiKey
-        });
-        this.moralisInitialized = true;
-        console.log('Moralis initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize Moralis:', error);
-        throw error;
-      }
+    if (APIService.isInitialized) {
+      return;
+    }
+
+    try {
+      await Moralis.start({
+        apiKey: this.moralisApiKey
+      });
+      APIService.isInitialized = true;
+      console.log('Moralis initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Moralis:', error);
+      throw error;
     }
   }
 
@@ -90,7 +91,7 @@ class APIService {
       });
 
       const tokens = response.raw || [];
-      
+
       // Format the response to match TokenBalance type
       return tokens.map(token => ({
         ...token,
@@ -158,7 +159,7 @@ class APIService {
 
       const tokenId = nativeTokenMapping[network.toLowerCase()] || 'ethereum';
       const url = `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd&include_24hr_change=true`;
-      
+
       const headers: Record<string, string> = {
         'Accept': 'application/json',
       };
@@ -190,7 +191,7 @@ class APIService {
   async getTopCoins(): Promise<Record<string, any>> {
     try {
       const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h';
-      
+
       const headers: Record<string, string> = {
         'Accept': 'application/json',
       };
@@ -206,7 +207,7 @@ class APIService {
       }
 
       const data = await response.json();
-      
+
       // Create mapping of contract addresses to price data
       const priceMap: Record<string, any> = {};
       data.forEach((coin: any) => {
@@ -234,7 +235,7 @@ class APIService {
       // First try to get prices from top coins list (better data coverage)
       const topCoins = await this.getTopCoins();
       const pricesFromTopCoins: Record<string, any> = {};
-      
+
       tokenAddresses.forEach(address => {
         const addressLower = address.toLowerCase();
         if (topCoins[addressLower]) {
@@ -251,7 +252,7 @@ class APIService {
       if (remainingAddresses.length > 0) {
         const addresses = remainingAddresses.join(',');
         const url = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${vsPurrency}&include_24hr_change=true`;
-        
+
         const headers: Record<string, string> = {
           'Accept': 'application/json',
         };
@@ -282,11 +283,11 @@ class APIService {
   generatePortfolioHistory(currentValue: number, period: '1d' | '1w' | '1m' | '1y' = '1y'): { labels: string[], data: number[] } {
     const data = [];
     const labels = [];
-    
+
     let dataPoints: number;
     let dateIncrement: number;
     let labelFormat: Intl.DateTimeFormatOptions;
-    
+
     switch (period) {
       case '1d':
         dataPoints = 24; // 24 hours
@@ -310,18 +311,18 @@ class APIService {
         labelFormat = { month: 'short', day: 'numeric' };
         break;
     }
-    
+
     for (let i = dataPoints - 1; i >= 0; i--) {
       const date = new Date();
       date.setTime(date.getTime() - (i * dateIncrement));
       labels.push(date.toLocaleDateString('en-US', labelFormat));
-      
+
       // Simulate historical data with some variation
       const variation = (Math.random() - 0.5) * 0.3; // ±15% variation
       const historicalValue = currentValue * (1 + variation);
       data.push(Math.max(0, historicalValue));
     }
-    
+
     return { labels, data };
   }
 
@@ -330,7 +331,7 @@ class APIService {
     console.log(`Fetching portfolio for ${address} on ${network}`);
     console.log(`Moralis API Key configured: ${!!this.moralisApiKey}`);
     console.log(`CoinGecko API Key configured: ${!!this.coinGeckoApiKey}`);
-    
+
     try {
       if (!this.moralisApiKey) {
         throw new Error('Moralis API key not configured. Please set REACT_APP_MORALIS_API_KEY in Secrets.');
@@ -348,7 +349,7 @@ class APIService {
 
       const chain = chainMapping[network.toLowerCase()] || 'eth';
       console.log(`Using chain: ${chain}`);
-      
+
       // Get native balance and tokens in parallel
       const [nativeBalance, tokens] = await Promise.all([
         this.getEVMNativeBalance(address, chain),
