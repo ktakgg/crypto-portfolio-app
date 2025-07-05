@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import {
   Chart as ChartJS,
@@ -12,7 +13,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Doughnut, Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -28,6 +29,8 @@ ChartJS.register(
 
 const Dashboard: React.FC = () => {
   const { state, fetchAllPortfolios } = useAppContext();
+  const [selectedWallet, setSelectedWallet] = useState<string>('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<'1d' | '1w' | '1m' | '1y'>('1y');
 
   useEffect(() => {
     if (state.wallets.length > 0) {
@@ -55,14 +58,60 @@ const Dashboard: React.FC = () => {
     return <span className={value >= 0 ? "text-green-500" : "text-red-500"}>{formattedValue}</span>
   }
 
+  // Calculate total portfolio value
   const totalPortfolioValue = Object.values(state.portfolios).reduce((sum, portfolio) => {
     return sum + (portfolio ? portfolio.totalValue : 0);
   }, 0);
 
-  // Prepare chart data
-  const getAllTokens = () => {
+  // Get portfolio value for selected wallet
+  const getSelectedPortfolioValue = () => {
+    if (selectedWallet === 'all') {
+      return totalPortfolioValue;
+    }
+    const portfolio = state.portfolios[selectedWallet];
+    return portfolio ? portfolio.totalValue : 0;
+  };
+
+  // Get tokens for portfolio distribution
+  const getPortfolioTokens = () => {
     const allTokens: any[] = [];
-    Object.values(state.portfolios).forEach(portfolio => {
+    
+    if (selectedWallet === 'all') {
+      // All wallets
+      Object.values(state.portfolios).forEach(portfolio => {
+        if (portfolio && !portfolio.loading && !portfolio.error) {
+          // Add native token
+          const existingNative = allTokens.find(t => t.symbol === portfolio.nativeToken.symbol);
+          if (existingNative) {
+            existingNative.value += portfolio.nativeToken.value;
+            existingNative.balance += portfolio.nativeToken.balance;
+          } else {
+            allTokens.push({
+              symbol: portfolio.nativeToken.symbol,
+              value: portfolio.nativeToken.value,
+              balance: portfolio.nativeToken.balance,
+            });
+          }
+          
+          // Add other tokens
+          portfolio.tokens.forEach(token => {
+            const existingToken = allTokens.find(t => t.symbol === token.symbol);
+            if (existingToken) {
+              existingToken.value += token.value;
+              existingToken.balance += token.balance;
+            } else {
+              allTokens.push({
+                symbol: token.symbol,
+                value: token.value,
+                balance: token.balance,
+              });
+            }
+          });
+        }
+      });
+    } else {
+      // Selected wallet only
+      const portfolio = state.portfolios[selectedWallet];
       if (portfolio && !portfolio.loading && !portfolio.error) {
         // Add native token
         allTokens.push({
@@ -70,58 +119,119 @@ const Dashboard: React.FC = () => {
           value: portfolio.nativeToken.value,
           balance: portfolio.nativeToken.balance,
         });
+        
         // Add other tokens
         portfolio.tokens.forEach(token => {
-          const existingToken = allTokens.find(t => t.symbol === token.symbol);
-          if (existingToken) {
-            existingToken.value += token.value;
-            existingToken.balance += token.balance;
-          } else {
-            allTokens.push({
-              symbol: token.symbol,
-              value: token.value,
-              balance: token.balance,
-            });
-          }
+          allTokens.push({
+            symbol: token.symbol,
+            value: token.value,
+            balance: token.balance,
+          });
         });
       }
-    });
-    return allTokens.sort((a, b) => b.value - a.value).slice(0, 10);
+    }
+    
+    return allTokens.sort((a, b) => b.value - a.value);
   };
 
-  const topTokens = getAllTokens();
+  const portfolioTokens = getPortfolioTokens();
 
-  const tokenBarChartData = {
-    labels: topTokens.map(token => token.symbol),
-    datasets: [
-      {
-        label: 'Token Value (USD)',
-        data: topTokens.map(token => token.value),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
+  // Portfolio distribution chart data
   const tokenDistributionData = {
-    labels: topTokens.slice(0, 5).map(token => token.symbol),
+    labels: portfolioTokens.slice(0, 8).map(token => token.symbol),
     datasets: [
       {
-        data: topTokens.slice(0, 5).map(token => token.value),
+        data: portfolioTokens.slice(0, 8).map(token => token.value),
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',
           'rgba(16, 185, 129, 0.8)',
           'rgba(245, 158, 11, 0.8)',
           'rgba(239, 68, 68, 0.8)',
           'rgba(139, 92, 246, 0.8)',
+          'rgba(236, 72, 153, 0.8)',
+          'rgba(6, 182, 212, 0.8)',
+          'rgba(34, 197, 94, 0.8)',
         ],
         borderWidth: 2,
       },
     ],
   };
 
-  const chartOptions = {
+  // Mock historical data for portfolio value
+  const generateHistoricalData = () => {
+    const currentValue = getSelectedPortfolioValue();
+    const data = [];
+    const labels = [];
+    
+    let dataPoints: number;
+    let dateIncrement: number;
+    let labelFormat: Intl.DateTimeFormatOptions;
+    
+    switch (selectedPeriod) {
+      case '1d':
+        dataPoints = 24; // 24 hours
+        dateIncrement = 60 * 60 * 1000; // 1 hour
+        labelFormat = { hour: 'numeric' };
+        break;
+      case '1w':
+        dataPoints = 7; // 7 days
+        dateIncrement = 24 * 60 * 60 * 1000; // 1 day
+        labelFormat = { weekday: 'short' };
+        break;
+      case '1m':
+        dataPoints = 30; // 30 days
+        dateIncrement = 24 * 60 * 60 * 1000; // 1 day
+        labelFormat = { month: 'short', day: 'numeric' };
+        break;
+      case '1y':
+      default:
+        dataPoints = 52; // 52 weeks
+        dateIncrement = 7 * 24 * 60 * 60 * 1000; // 1 week
+        labelFormat = { month: 'short', day: 'numeric' };
+        break;
+    }
+    
+    for (let i = dataPoints - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setTime(date.getTime() - (i * dateIncrement));
+      labels.push(date.toLocaleDateString('en-US', labelFormat));
+      
+      // Simulate historical data with some variation
+      const variation = (Math.random() - 0.5) * 0.3; // ±15% variation
+      const historicalValue = currentValue * (1 + variation);
+      data.push(Math.max(0, historicalValue));
+    }
+    
+    return { labels, data };
+  };
+
+  const historicalData = generateHistoricalData();
+
+  const portfolioHistoryData = {
+    labels: historicalData.labels,
+    datasets: [
+      {
+        label: 'Portfolio Value (USD)',
+        data: historicalData.data,
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+      },
+    },
+  };
+
+  const lineChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -141,47 +251,82 @@ const Dashboard: React.FC = () => {
     },
   };
 
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'right' as const,
-      },
-    },
-  };
-
   return (
     <div className="flex flex-col max-w-[960px] flex-1">
       <div className="flex flex-wrap justify-between gap-3 p-4">
         <p className="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight min-w-72">Dashboard</p>
       </div>
 
+      {/* Wallet Selection */}
+      {state.wallets.length > 0 && (
+        <div className="mx-4 mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Wallet</label>
+          <select
+            value={selectedWallet}
+            onChange={(e) => setSelectedWallet(e.target.value)}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all">All Wallets</option>
+            {state.wallets.map((wallet) => (
+              <option key={wallet.id} value={wallet.id}>
+                {wallet.alias || formatAddress(wallet.address)} ({getChainName(wallet.network)})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Total Portfolio Value */}
       {state.wallets.length > 0 && (
         <div className="mx-4 mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Total Portfolio Value</h2>
-          <p className="text-3xl font-bold text-gray-900">{formatCurrency(totalPortfolioValue)}</p>
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">
+            {selectedWallet === 'all' ? 'Total Portfolio Value' : 'Wallet Portfolio Value'}
+          </h2>
+          <p className="text-3xl font-bold text-gray-900">{formatCurrency(getSelectedPortfolioValue())}</p>
           {state.ui.loading && <p className="text-sm text-gray-600 mt-1">Updating...</p>}
         </div>
       )}
 
       {/* Charts Section */}
-      {state.wallets.length > 0 && topTokens.length > 0 && (
+      {state.wallets.length > 0 && portfolioTokens.length > 0 && (
         <div className="mx-4 mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Token Distribution Doughnut Chart */}
+          {/* Portfolio Distribution Chart */}
           <div className="bg-white p-6 rounded-lg border shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Portfolio Distribution</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              {selectedWallet === 'all' ? 'Total Portfolio Distribution' : 'Wallet Portfolio Distribution'}
+            </h3>
             <div className="h-64">
               <Doughnut data={tokenDistributionData} options={doughnutOptions} />
             </div>
           </div>
 
-          {/* Token Value Bar Chart */}
+          {/* Portfolio History Chart */}
           <div className="bg-white p-6 rounded-lg border shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Tokens by Value</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Portfolio Value History</h3>
+              <div className="flex gap-1">
+                {[
+                  { label: '1D', value: '1d' as const },
+                  { label: '1W', value: '1w' as const },
+                  { label: '1M', value: '1m' as const },
+                  { label: '1Y', value: '1y' as const },
+                ].map((period) => (
+                  <button
+                    key={period.value}
+                    onClick={() => setSelectedPeriod(period.value)}
+                    className={`px-3 py-1 text-sm rounded ${
+                      selectedPeriod === period.value
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {period.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="h-64">
-              <Bar data={tokenBarChartData} options={chartOptions} />
+              <Line data={portfolioHistoryData} options={lineChartOptions} />
             </div>
           </div>
         </div>

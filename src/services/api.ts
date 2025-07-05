@@ -226,6 +226,53 @@ class APIService {
     }
   }
 
+  // Generate portfolio history data (mock implementation)
+  generatePortfolioHistory(currentValue: number, period: '1d' | '1w' | '1m' | '1y' = '1y'): { labels: string[], data: number[] } {
+    const data = [];
+    const labels = [];
+    
+    let dataPoints: number;
+    let dateIncrement: number;
+    let labelFormat: Intl.DateTimeFormatOptions;
+    
+    switch (period) {
+      case '1d':
+        dataPoints = 24; // 24 hours
+        dateIncrement = 60 * 60 * 1000; // 1 hour
+        labelFormat = { hour: 'numeric' };
+        break;
+      case '1w':
+        dataPoints = 7; // 7 days
+        dateIncrement = 24 * 60 * 60 * 1000; // 1 day
+        labelFormat = { weekday: 'short' };
+        break;
+      case '1m':
+        dataPoints = 30; // 30 days
+        dateIncrement = 24 * 60 * 60 * 1000; // 1 day
+        labelFormat = { month: 'short', day: 'numeric' };
+        break;
+      case '1y':
+      default:
+        dataPoints = 52; // 52 weeks
+        dateIncrement = 7 * 24 * 60 * 60 * 1000; // 1 week
+        labelFormat = { month: 'short', day: 'numeric' };
+        break;
+    }
+    
+    for (let i = dataPoints - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setTime(date.getTime() - (i * dateIncrement));
+      labels.push(date.toLocaleDateString('en-US', labelFormat));
+      
+      // Simulate historical data with some variation
+      const variation = (Math.random() - 0.5) * 0.3; // ±15% variation
+      const historicalValue = currentValue * (1 + variation);
+      data.push(Math.max(0, historicalValue));
+    }
+    
+    return { labels, data };
+  }
+
   // Get complete wallet portfolio data
   async getWalletPortfolio(address: string, network: string): Promise<WalletPortfolioData> {
     console.log(`Fetching portfolio for ${address} on ${network}`);
