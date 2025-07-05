@@ -95,6 +95,7 @@ class APIService {
       // Format the response to match TokenBalance type
       return tokens.map(token => ({
         ...token,
+        verified_contract: token.verified_contract || false,
         balance_formatted: (parseFloat(token.balance) / Math.pow(10, token.decimals)).toString()
       }));
     } catch (error) {
