@@ -1,11 +1,16 @@
 import React from 'react';
+import { useAppContext } from '../contexts/AppContext';
 
 const Dashboard: React.FC = () => {
-  const wallets = [
-    { name: 'Wallet 1', address: '0x123...abc', chain: 'Ethereum', balance: '$1,234.56', change: '+2.3%', changeColor: 'text-green-600' },
-    { name: 'Wallet 2', address: '0x456...def', chain: 'Solana', balance: '$789.01', change: '-1.1%', changeColor: 'text-red-600' },
-    { name: 'Wallet 3', address: '0x789...ghi', chain: 'Ethereum', balance: '$3,456.78', change: '+0.5%', changeColor: 'text-green-600' },
-  ];
+  const { state } = useAppContext();
+  
+  const formatAddress = (address: string) => {
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+
+  const getChainName = (network: string) => {
+    return network === 'ethereum' ? 'Ethereum' : 'Solana';
+  };
 
   return (
     <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
@@ -24,19 +29,27 @@ const Dashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e7edf4]">
-                    {wallets.map((wallet, index) => (
-                      <tr key={index}>
-                        <td className="h-[72px] px-4 py-2 text-[#0d141c] text-sm font-normal leading-normal">{wallet.name}</td>
-                        <td className="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">{wallet.address}</td>
-                        <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                          <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal w-full">
-                            <span className="truncate">{wallet.chain}</span>
-                          </button>
+                    {state.wallets.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="h-[72px] px-4 py-2 text-center text-[#49739c] text-sm font-normal leading-normal">
+                          ウォレットが登録されていません。ウォレット管理画面から追加してください。
                         </td>
-                        <td className="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">{wallet.balance}</td>
-                        <td className={`h-[72px] px-4 py-2 text-sm font-normal leading-normal ${wallet.changeColor}`}>{wallet.change}</td>
                       </tr>
-                    ))}
+                    ) : (
+                      state.wallets.map((wallet) => (
+                        <tr key={wallet.id}>
+                          <td className="h-[72px] px-4 py-2 text-[#0d141c] text-sm font-normal leading-normal">{wallet.alias}</td>
+                          <td className="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">{formatAddress(wallet.address)}</td>
+                          <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+                            <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#e7edf4] text-[#0d141c] text-sm font-medium leading-normal w-full">
+                              <span className="truncate">{getChainName(wallet.network)}</span>
+                            </button>
+                          </td>
+                          <td className="h-[72px] px-4 py-2 text-[#49739c] text-sm font-normal leading-normal">読み込み中...</td>
+                          <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal text-gray-500">-</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -8,11 +8,13 @@ const WalletList: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [editingWallet, setEditingWallet] = useState<string | null>(null);
   const [editAlias, setEditAlias] = useState('');
+  const [editAddress, setEditAddress] = useState('');
   const [deleteWallet, setDeleteWallet] = useState<string | null>(null);
 
-  const handleEditStart = (walletId: string, currentAlias: string) => {
+  const handleEditStart = (walletId: string, currentAlias: string, currentAddress: string) => {
     setEditingWallet(walletId);
     setEditAlias(currentAlias);
+    setEditAddress(currentAddress);
   };
 
   const handleEditSave = () => {
@@ -21,17 +23,22 @@ const WalletList: React.FC = () => {
         type: 'UPDATE_WALLET',
         payload: {
           id: editingWallet,
-          updates: { alias: editAlias.trim() || '未設定' }
+          updates: { 
+            alias: editAlias.trim() || '未設定',
+            address: editAddress.trim()
+          }
         }
       });
       setEditingWallet(null);
       setEditAlias('');
+      setEditAddress('');
     }
   };
 
   const handleEditCancel = () => {
     setEditingWallet(null);
     setEditAlias('');
+    setEditAddress('');
   };
 
   const handleDelete = (walletId: string) => {
@@ -74,15 +81,28 @@ const WalletList: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     {editingWallet === wallet.id ? (
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          value={editAlias}
-                          onChange={(value: string) => setEditAlias(value)}
-                          className="flex-1"
-                          maxLength={50}
-                        />
-                        <Button size="sm" onClick={handleEditSave}>保存</Button>
-                        <Button size="sm" variant="secondary" onClick={handleEditCancel}>キャンセル</Button>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <label className="text-xs text-gray-600 w-16">エイリアス:</label>
+                          <Input
+                            value={editAlias}
+                            onChange={(value: string) => setEditAlias(value)}
+                            className="flex-1"
+                            maxLength={50}
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <label className="text-xs text-gray-600 w-16">アドレス:</label>
+                          <Input
+                            value={editAddress}
+                            onChange={(value: string) => setEditAddress(value)}
+                            className="flex-1"
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" onClick={handleEditSave}>保存</Button>
+                          <Button size="sm" variant="secondary" onClick={handleEditCancel}>キャンセル</Button>
+                        </div>
                       </div>
                     ) : (
                       <div>
@@ -100,7 +120,7 @@ const WalletList: React.FC = () => {
                   <Button 
                     size="sm" 
                     variant="secondary"
-                    onClick={() => handleEditStart(wallet.id, wallet.alias)}
+                    onClick={() => handleEditStart(wallet.id, wallet.alias, wallet.address)}
                   >
                     編集
                   </Button>
