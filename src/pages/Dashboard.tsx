@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
 const Dashboard: React.FC = () => {
-  const { state } = useAppContext();
+  const { state, fetchAllPortfolios } = useAppContext();
+
+  useEffect(() => {
+    if (state.wallets.length > 0) {
+      fetchAllPortfolios();
+    }
+  }, [state.wallets.length, fetchAllPortfolios]);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;

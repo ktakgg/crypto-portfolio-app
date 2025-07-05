@@ -39,8 +39,8 @@ class APIService {
   private coinGeckoApiKey: string | null;
 
   constructor() {
-    this.moralisApiKey = process.env.MORALIS_API_KEY || '';
-    this.coinGeckoApiKey = process.env.COINGECKO_API_KEY || null;
+    this.moralisApiKey = process.env.REACT_APP_MORALIS_API_KEY || '';
+    this.coinGeckoApiKey = process.env.REACT_APP_COINGECKO_API_KEY || null;
   }
 
   // Moralis API for EVM networks (Ethereum, Polygon, BSC, etc.)
@@ -107,6 +107,33 @@ class APIService {
     }
   }
 
+  // Get ETH price from CoinGecko
+  async getETHPrice(): Promise<any> {
+    try {
+      const url = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true';
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+
+      if (this.coinGeckoApiKey) {
+        headers['x-cg-demo-api-key'] = this.coinGeckoApiKey;
+      }
+
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        throw new Error(`CoinGecko API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.ethereum;
+    } catch (error) {
+      console.error('Error fetching ETH price:', error);
+      return { usd: 0, usd_24h_change: 0 };
+    }
+  }
+
   // Get token prices from CoinGecko
   async getTokenPrices(tokenAddresses: string[], vsPurrency: string = 'usd'): Promise<Record<string, any>> {
     try {
@@ -157,14 +184,13 @@ class APIService {
       const prices = tokenAddresses.length > 0 ? await this.getTokenPrices(tokenAddresses) : {};
 
       // Get ETH price for native balance
-      const ethPriceResponse = await this.getTokenPrices(['0x0000000000000000000000000000000000000000']);
-      const ethPrice = Object.values(ethPriceResponse)[0] as any;
+      const ethPrice = await this.getETHPrice();
 
       // Update native balance with price
-      if (ethPrice) {
+      if (ethPrice && ethPrice.usd) {
         nativeBalance.usd_price = ethPrice.usd;
         nativeBalance.usd_value = parseFloat(nativeBalance.balance_formatted) * ethPrice.usd;
-        nativeBalance.usd_price_24hr_percent_change = ethPrice.usd_24h_change;
+        nativeBalance.usd_price_24hr_percent_change = ethPrice.usd_24h_change || 0;
       }
 
       // Update tokens with prices
