@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
-import Button from '../common/Button';
+import { detectNetwork, validateWalletAddress } from '../../utils/cookieManager';
 import Input from '../common/Input';
+import Button from '../common/Button';
 import Modal from '../common/Modal';
 
 const WalletList: React.FC = () => {

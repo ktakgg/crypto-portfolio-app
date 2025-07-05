@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
+import { apiService, WalletPortfolioData } from '../services/api';
 
 // アクションの型定義
 type AppAction =
@@ -148,6 +149,8 @@ interface AppContextType {
   setActiveModal: (modal: string | null) => void;
   updatePreferences: (preferences: UserPreferences) => void;
   refreshWallets: () => void;
+  fetchWalletPortfolio: (walletId: string) => Promise<void>;
+  fetchAllPortfolios: () => Promise<void>;
 }
 
 // コンテキストの作成
@@ -208,6 +211,57 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_WALLETS', payload: wallets });
   };
 
+  const fetchWalletPortfolio = async (walletId: string) => {
+    const wallet = state.wallets.find(w => w.id === walletId);
+    if (!wallet) return;
+
+    dispatch({ type: 'SET_PORTFOLIO_LOADING', payload: { walletId, loading: true } });
+
+    try {
+      const portfolioData = await apiService.getWalletPortfolio(wallet.address, wallet.network);
+      
+      const portfolio: WalletPortfolio = {
+        totalValue: portfolioData.totalUsdValue,
+        tokens: portfolioData.tokens.map(token => ({
+          address: token.token_address,
+          symbol: token.symbol,
+          name: token.name,
+          balance: parseFloat(token.balance_formatted),
+          value: token.usd_value || 0,
+          price: token.usd_price || 0,
+          change24h: token.usd_price_24hr_percent_change || 0,
+          logoUrl: token.logo,
+        })),
+        nativeToken: {
+          symbol: wallet.network === 'ethereum' ? 'ETH' : 'SOL',
+          balance: parseFloat(portfolioData.nativeBalance.balance_formatted),
+          value: portfolioData.nativeBalance.usd_value || 0,
+          price: portfolioData.nativeBalance.usd_price || 0,
+          change24h: portfolioData.nativeBalance.usd_price_24hr_percent_change || 0,
+        },
+        lastUpdated: portfolioData.lastUpdated,
+        loading: false,
+      };
+
+      dispatch({ type: 'SET_PORTFOLIO', payload: { walletId, portfolio } });
+    } catch (error) {
+      console.error('Error fetching portfolio:', error);
+      dispatch({ 
+        type: 'SET_PORTFOLIO_ERROR', 
+        payload: { walletId, error: error instanceof Error ? error.message : 'Unknown error' }
+      });
+    }
+  };
+
+  const fetchAllPortfolios = async () => {
+    setLoading(true);
+    try {
+      await Promise.all(state.wallets.map(wallet => fetchWalletPortfolio(wallet.id)));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const contextValue: AppContextType = {
     state,
     dispatch,
@@ -216,6 +270,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setActiveModal,
     updatePreferences,
     refreshWallets,
+    fetchWalletPortfolio,
+    fetchAllPortfolios,
   };
 
   return (
