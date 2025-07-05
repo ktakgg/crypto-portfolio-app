@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { AppState, Wallet, UserPreferences, WalletPortfolio } from '../types';
 import { getUserId, getWallets, getPreferences, savePreferences, saveWallets } from '../utils/cookieManager';
 import { apiService, WalletPortfolioData } from '../services/api';

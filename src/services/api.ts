@@ -163,7 +163,15 @@ class APIService {
 
   // Get complete wallet portfolio data
   async getWalletPortfolio(address: string, network: string): Promise<WalletPortfolioData> {
+    console.log(`Fetching portfolio for ${address} on ${network}`);
+    console.log(`Moralis API Key configured: ${!!this.moralisApiKey}`);
+    console.log(`CoinGecko API Key configured: ${!!this.coinGeckoApiKey}`);
+    
     try {
+      if (!this.moralisApiKey) {
+        throw new Error('Moralis API key not configured. Please set REACT_APP_MORALIS_API_KEY in Secrets.');
+      }
+
       const chainMapping: Record<string, string> = {
         'ethereum': 'eth',
         'polygon': 'polygon',
@@ -172,6 +180,7 @@ class APIService {
       };
 
       const chain = chainMapping[network.toLowerCase()] || 'eth';
+      console.log(`Using chain: ${chain}`);
       
       // Get native balance and tokens in parallel
       const [nativeBalance, tokens] = await Promise.all([
@@ -216,6 +225,12 @@ class APIService {
       const totalUsdValue = nativeBalance.usd_value + 
         tokensWithPrices.reduce((sum, token) => sum + (token.usd_value || 0), 0);
 
+      console.log(`Portfolio fetch successful for ${address}:`, {
+        totalUsdValue,
+        nativeBalance: nativeBalance.balance_formatted,
+        tokenCount: tokensWithPrices.length
+      });
+
       return {
         address,
         network,
@@ -227,6 +242,12 @@ class APIService {
       };
     } catch (error) {
       console.error('Error fetching wallet portfolio:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        address,
+        network,
+        moralisKeyPresent: !!this.moralisApiKey
+      });
       throw error;
     }
   }

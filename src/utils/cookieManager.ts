@@ -35,6 +35,20 @@ export const saveSettings = (settings: any) => {
   Cookies.set(SETTINGS_KEY, JSON.stringify(settings), { expires: 365 });
 };
 
+// 設定情報の管理（新しい関数名）
+export const getPreferences = (): any => {
+  const preferences = Cookies.get(SETTINGS_KEY);
+  return preferences ? JSON.parse(preferences) : {
+    theme: 'light',
+    currency: 'USD',
+    dashboardLayout: [],
+  };
+};
+
+export const savePreferences = (preferences: any) => {
+  Cookies.set(SETTINGS_KEY, JSON.stringify(preferences), { expires: 365 });
+};
+
 // 全データのクリア
 export const clearAllData = () => {
   Cookies.remove(USER_ID_KEY);
